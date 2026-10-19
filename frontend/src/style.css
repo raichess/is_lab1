@@ -1,0 +1,392 @@
+:root {
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --text: #1f2933;
+    --muted: #6b7785;
+    --border: #d9dee5;
+    --primary: #FF1493;
+    --danger: #d64545;
+    --danger-bg: #fdecec;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    color: #f32cb2;
+    background-color: var(--bg);
+    background-image:
+            linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)),
+            url('../public/background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+
+main {
+    width: 100%;
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 1rem 1.5rem 3rem;
+}
+
+h1, h2, h3, h4 {
+    text-align: center;
+}
+
+h1 {
+    font-size: 1.5rem;
+    margin: 1.5rem auto;
+}
+
+h2 {
+    font-size: 1.15rem;
+    margin-top: 0;
+}
+
+main :is(h1, h2, h3, h4, p, label, small, dt, dd) {
+    -webkit-text-stroke: 0.4px #222;
+}
+
+
+.menu {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2rem;
+    padding: 0.75rem 1.5rem;
+    color: var(--text);
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+}
+
+.menu nav,
+.main-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+}
+
+.menu nav a {
+    padding-bottom: 2px;
+    color: var(--muted);
+    text-decoration: none;
+}
+
+.menu nav a.router-link-exact-active {
+    color: var(--primary);
+    border-bottom: 2px solid var(--primary);
+}
+
+.menu .user {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--muted);
+}
+
+
+button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 0.4rem 0.9rem;
+    border: 0;
+    border-radius: 6px;
+    background: var(--primary);
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+button.secondary {
+    background: #e4e8ee;
+    color: var(--text);
+}
+
+button.danger {
+    background: var(--danger);
+}
+
+
+input,
+select,
+textarea {
+    max-width: 100%;
+    min-height: 38px;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--text);
+    font: inherit;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+}
+
+.form label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    color: var(--text);
+    text-align: left;
+    font-weight: 500;
+}
+
+.form input,
+.form select,
+.form textarea {
+    width: 100%;
+}
+
+form.inline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: 0 auto 1.25rem;
+}
+
+form.inline label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    color: var(--text);
+    text-align: left;
+}
+
+
+.card,
+.dialog {
+    color: var(--text);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-align: center;
+}
+
+.card {
+    width: 100%;
+    max-width: 900px;
+    margin: 1.25rem auto;
+    padding: 1rem 1.25rem;
+}
+
+.card h1,
+.card h2,
+.card h3,
+.card h4,
+.dialog h1,
+.dialog h2,
+.dialog h3,
+.dialog h4 {
+    text-align: center;
+}
+
+.related {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    justify-content: center;
+    gap: 1rem;
+}
+
+.related .card {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    background: #f9fafc;
+}
+
+.related p {
+    margin: 0.2rem 0;
+}
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(20, 25, 35, 0.5);
+}
+
+.dialog {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: min(560px, 94vw);
+    max-height: 92vh;
+    padding: 1.25rem 1.5rem;
+    overflow-y: auto;
+}
+
+
+.banner {
+    max-width: 680px;
+    margin: 0.75rem auto;
+    padding: 0.6rem 0.9rem;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.banner.error {
+    background: var(--danger-bg);
+    color: var(--danger);
+}
+
+.error,
+small.error {
+    color: var(--danger);
+}
+
+small {
+    display: block;
+    color: var(--muted);
+}
+
+
+.table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    color: var(--text);
+}
+
+th,
+td {
+    padding: 0.5rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+    vertical-align: middle;
+    color: var(--text);
+}
+
+th {
+    background: #eef1f5;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+th.sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+tr.filters th {
+    padding: 0.3rem 0.4rem;
+    background: #f7f8fa;
+}
+
+tr.filters input {
+    width: 100%;
+    min-width: 90px;
+}
+
+td.empty {
+    color: var(--muted);
+}
+
+td.actions {
+    white-space: nowrap;
+}
+
+td.actions,
+.actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.actions {
+    margin-top: 1.25rem;
+}
+
+.pager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+
+dl {
+    display: grid;
+    grid-template-columns: max-content max-content;
+    justify-content: center;
+    gap: 0.35rem 1rem;
+    text-align: left;
+}
+
+dt {
+    color: var(--muted);
+    font-weight: 600;
+}
+
+dd {
+    margin: 0 0 0.5rem;
+    color: var(--text);
+}
+
+a {
+    color: var(--primary);
+}
+
+
+@media (max-width: 600px) {
+    main {
+        padding: 1rem 0.75rem 2rem;
+    }
+
+    .menu {
+        gap: 1rem;
+        padding: 0.75rem;
+    }
+
+    .card {
+        padding: 0.85rem;
+    }
+
+    dl {
+        grid-template-columns: 1fr;
+        gap: 0.2rem;
+        text-align: center;
+    }
+
+    dd {
+        margin-bottom: 0.75rem;
+    }
+}
