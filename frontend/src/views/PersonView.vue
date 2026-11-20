@@ -12,6 +12,9 @@ const idInput = ref('')
 const person = ref(null)
 const error = ref('')
 const editing = ref(false)
+const notice = ref('')
+const deleting = ref(false)
+let ownUntil = 0
 
 async function load() {
   const id = route.params.id
@@ -31,9 +34,10 @@ async function load() {
 }
 
 function search() {
+  notice.value = ''
   const n = Number(idInput.value)
-  if (!Number.isInteger(n) || n <= 0) {
-    error.value = 'ID должен быть целым и больше 0!'
+  if (!Number.isInteger(n)) {
+    error.value = 'ID должен быть целым'
     return
   }
   if (String(n) === route.params.id) load()
@@ -41,26 +45,44 @@ function search() {
 }
 
 async function remove() {
-  if (!confirm(`Удалить пиил#${person.value.id} «${person.value.name}»?`)) return
+  deleting.value = true
   try {
     await personApi.remove(person.value.id)
     router.push('/')
   } catch (e) {
     error.value = e.message
+  } finally {
+    deleting.value = false
   }
 }
 
 function onSaved() {
+  ownUntil = Date.now() + 1500
   editing.value = false
   load()
 }
 
-watch(() => route.params.id, load, { immediate: true })
+watch(() => route.params.id, () => {
+  notice.value = ''
+  load()
+}, { immediate: true })
 
 let off
 onMounted(() => {
-  off = onPersonChanged((message) => {
-    if (String(message.id) === String(route.params.id)) load()
+  off = onPersonChanged(async (message) => {
+    if (!person.value || String(message.id) !== String(route.params.id)) return
+
+    if (message.type === 'deleted') {
+      if (deleting.value) return
+      notice.value = `Пипл ${message.id} «${person.value.name}» был удалён в другом окне`
+      person.value = null
+      editing.value = false
+      error.value = ''
+    } else if (message.type === 'updated') {
+      if (editing.value || Date.now() < ownUntil) return
+      await load()
+      if (person.value) notice.value = `Пипл ${message.id} «${person.value.name}» был изменён в другом окне`
+    }
   })
 })
 onUnmounted(() => off?.())
@@ -75,6 +97,9 @@ onUnmounted(() => off?.())
   </form>
 
   <p v-if="error" class="banner error">{{ error }}</p>
+  <p v-if="notice" class="banner">
+    {{ notice }}
+  </p>
 
   <section v-if="person" class="card">
     <h2>{{ person.name }} <small>#{{ person.id }}</small></h2>

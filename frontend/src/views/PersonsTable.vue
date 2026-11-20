@@ -12,7 +12,19 @@ const sortBy = ref('id')
 const sortDir = ref('asc')
 const filters = reactive({ name: '', eyeColor: '', hairColor: '', nationality: '', locationName: '', heightMin: '', heightMax: '' })
 const error = ref('')
+const notice = ref('')
 const editing = ref(null)
+
+const ownIds = new Set()
+const holdOwn = (id) => ownIds.add(String(id))
+const releaseOwn = (id) => setTimeout(() => ownIds.delete(String(id)), 1500)
+
+let noticeTimer
+function showNotice(text) {
+  notice.value = text
+  clearTimeout(noticeTimer)
+  noticeTimer = setTimeout(() => (notice.value = ''), 8000)
+}
 
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / size.value)))
 
@@ -67,18 +79,36 @@ function resetFilters() {
 }
 
 async function remove(person) {
-  if (!confirm(`Удалить пипл #${person.id} «${person.name}»?`)) return
+  holdOwn(person.id)
   try {
     await personApi.remove(person.id)
     await load()
   } catch (e) {
     error.value = e.message
+  } finally {
+    releaseOwn(person.id)
   }
 }
 
-function onSaved() {
+function onSaved(saved) {
+  if (saved?.id != null) {
+    holdOwn(saved.id)
+    releaseOwn(saved.id)
+  }
   editing.value = null
   load()
+}
+
+function onForeignChange(message) {
+  if (message.type !== 'deleted' && message.type !== 'updated') return
+  const id = String(message.id)
+  const isOwn = ownIds.has(id) || (editing.value && String(editing.value.id) === id)
+  if (isOwn) return
+  const known = items.value.find((p) => String(p.id) === id)
+  const label = known ? `${id} «${known.name}»` : `${id}`
+  showNotice(message.type === 'deleted'
+      ? `Пипл ${label} был удалён в другом окне`
+      : `Пипл ${label} был изменён в другом окне`)
 }
 
 watch([sortBy, sortDir, size], () => {
@@ -98,68 +128,75 @@ watch(filters, () => {
 let off
 onMounted(() => {
   load()
-  off = onPersonChanged(() => load())
+  off = onPersonChanged((message) => {
+    onForeignChange(message)
+    load()
+  })
 })
 onUnmounted(() => {
   off?.()
   clearTimeout(timer)
+  clearTimeout(noticeTimer)
 })
 </script>
 
 <template>
   <h1>Список пипл</h1>
   <p v-if="error" class="banner error">{{ error }}</p>
+  <p v-if="notice" class="banner">
+    {{ notice }}
+  </p>
 
   <div class="table-wrap">
     <table>
       <thead>
-        <tr>
-          <th
+      <tr>
+        <th
             v-for="c in columns"
             :key="c.key"
             :class="{ sortable: c.sort }"
             @click="c.sort && sort(c.sort)"
-          >
-            {{ c.label }}<span v-if="c.sort && c.sort === sortBy"> {{ sortDir === 'asc' ? '▲' : '▼' }}</span>
-          </th>
-          <th>Действия</th>
-        </tr>
-        <tr class="filters">
-          <th></th>
-          <th><input v-model="filters.name" placeholder="фильтр" /></th>
-          <th></th>
-          <th></th>
-          <th><input v-model="filters.eyeColor" placeholder="фильтр" /></th>
-          <th><input v-model="filters.hairColor" placeholder="фильтр" /></th>
-          <th><input v-model="filters.locationName" placeholder="по названию" /></th>
-          <th>
-            <input v-model="filters.heightMin" type="number" step="any" placeholder="от" style="width: 4.5em" />
-            <input v-model="filters.heightMax" type="number" step="any" placeholder="до" style="width: 4.5em" />
-          </th>
-          <th><input v-model="filters.nationality" placeholder="фильтр" /></th>
-          <th><button class="secondary" @click="resetFilters">Сбросить</button></th>
-        </tr>
+        >
+          {{ c.label }}<span v-if="c.sort && c.sort === sortBy"> {{ sortDir === 'asc' ? '▲' : '▼' }}</span>
+        </th>
+        <th>Действия</th>
+      </tr>
+      <tr class="filters">
+        <th></th>
+        <th><input v-model="filters.name" placeholder="фильтр" /></th>
+        <th></th>
+        <th></th>
+        <th><input v-model="filters.eyeColor" placeholder="фильтр" /></th>
+        <th><input v-model="filters.hairColor" placeholder="фильтр" /></th>
+        <th><input v-model="filters.locationName" placeholder="по названию" /></th>
+        <th>
+          <input v-model="filters.heightMin" type="number" step="any" placeholder="от" style="width: 4.5em" />
+          <input v-model="filters.heightMax" type="number" step="any" placeholder="до" style="width: 4.5em" />
+        </th>
+        <th><input v-model="filters.nationality" placeholder="фильтр" /></th>
+        <th><button class="secondary" @click="resetFilters">Сбросить</button></th>
+      </tr>
       </thead>
       <tbody>
-        <tr v-for="p in items" :key="p.id">
-          <td>{{ p.id }}</td>
-          <td>{{ p.name }}</td>
-          <td>({{ p.coordinates.x }}; {{ p.coordinates.y }})</td>
-          <td>{{ p.creationDate }}</td>
-          <td>{{ p.eyeColor ?? '—' }}</td>
-          <td>{{ p.hairColor }}</td>
-          <td>{{ p.location.name ?? 'без названия' }} ({{ p.location.x }}; {{ p.location.y }}; {{ p.location.z }})</td>
-          <td>{{ p.height }}</td>
-          <td>{{ p.nationality ?? '—' }}</td>
-          <td class="actions">
-            <RouterLink :to="`/person/${p.id}`">Открыть</RouterLink>
-            <button @click="editing = p">Изменить</button>
-            <button class="danger" @click="remove(p)">Удалить</button>
-          </td>
-        </tr>
-        <tr v-if="!items.length">
-          <td colspan="10" class="empty">Нет объектов</td>
-        </tr>
+      <tr v-for="p in items" :key="p.id">
+        <td>{{ p.id }}</td>
+        <td>{{ p.name }}</td>
+        <td>({{ p.coordinates.x }}; {{ p.coordinates.y }})</td>
+        <td>{{ p.creationDate }}</td>
+        <td>{{ p.eyeColor ?? '—' }}</td>
+        <td>{{ p.hairColor }}</td>
+        <td>{{ p.location.name ?? 'без названия' }} ({{ p.location.x }}; {{ p.location.y }}; {{ p.location.z }})</td>
+        <td>{{ p.height }}</td>
+        <td>{{ p.nationality ?? '—' }}</td>
+        <td class="actions">
+          <RouterLink :to="`/person/${p.id}`">Открыть</RouterLink>
+          <button @click="editing = p">Изменить</button>
+          <button class="danger" @click="remove(p)">Удалить</button>
+        </td>
+      </tr>
+      <tr v-if="!items.length">
+        <td colspan="10" class="empty">Нет объектов</td>
+      </tr>
       </tbody>
     </table>
   </div>

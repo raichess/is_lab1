@@ -84,7 +84,7 @@ async function submit() {
     <p v-if="generalError" class="banner error">{{ generalError }}</p>
 
     <label>
-      Имя *
+      Имя
       <input v-model="form.name" type="text" maxlength="255" />
       <small v-if="errors.name" class="error">{{ errors.name }}</small>
     </label>
