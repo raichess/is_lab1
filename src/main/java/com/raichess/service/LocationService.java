@@ -35,7 +35,7 @@ public class LocationService {
                 .orElseThrow(() -> new ApiException(404, "Объект с id=" + id + " не найден"));
         long used = persons.countByLocationId(id);
         if (used > 0) {
-            throw new ApiException(409, "Нельзя удалить: объект связан с Person (" + used + " шт.)");
+            throw new ApiException(403, "Нельзя удалить: объект связан с Person (" + used + " шт.)");
         }
         locations.delete(entity);
     }

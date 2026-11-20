@@ -31,11 +31,10 @@ public class CoordinatesService {
     }
 
     public void delete(int id) {
-        Coordinates entity = coordinates.findById(id)
-                .orElseThrow(() -> new ApiException(404, "Объект с id=" + id + " не найден"));
+        Coordinates entity = coordinates.findById(id).orElseThrow(() -> new ApiException(404, "Объект с id=" + id + " не найден"));
         long used = persons.countByCoordinatesId(id);
         if (used > 0) {
-            throw new ApiException(409, "Нельзя удалить: объект связан с Person (" + used + " шт.)");
+            throw new ApiException(403, "Нельзя удалить: объект связан с Person (" + used + " шт.)");
         }
         coordinates.delete(entity);
     }
